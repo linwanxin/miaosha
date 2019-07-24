@@ -30,6 +30,13 @@ Rest会返回数据对象，自动封装成Json格式；
 
 10.jsr303参数校验，自定义实现
 起因：每个方法的参数都需要校验，所以整个注解框架-》jsr303
+        //用jsr303代替参数校验
+//        if(StringUtils.isEmpty(loginVo.getMobile())){
+//        }
+//        if(StringUtils.isEmpty(loginVo.getPassword())){
+//        }
+//        if(ValidatorUtil.isMobile(loginVo.getMobile())){
+//        }
 
 11.Bug:切记警告:
 看导入的包是否正确！好隐蔽的bug！！导致昨晚我搞了好久没发现,今早点开一看发现bindException.class所在的包不对！
@@ -62,3 +69,7 @@ Rest会返回数据对象，自动封装成Json格式；
 
 
 18.+ param（”“）其实是类似于map类型！
+
+
+19.一个巨恶心的bug
+插入表一直报字段错误，百思不得其解，最后google，然后是表字段多加了个空格！崩溃死！

@@ -1,12 +1,9 @@
 package com.yulenka.miaosha.controller;
 
-import com.yulenka.miaosha.result.CodeMsg;
 import com.yulenka.miaosha.result.Result;
 import com.yulenka.miaosha.service.MSUserService;
-import com.yulenka.miaosha.util.ValidatorUtil;
 import com.yulenka.miaosha.vo.LoginVo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,13 +36,6 @@ public class LoginController {
     @ResponseBody
     public Result<Boolean> doLogin(HttpServletResponse response, @Valid LoginVo loginVo){
         log.info(loginVo.toString());
-        //用jsr303代替参数校验
-//        if(StringUtils.isEmpty(loginVo.getMobile())){
-//        }
-//        if(StringUtils.isEmpty(loginVo.getPassword())){
-//        }
-//        if(ValidatorUtil.isMobile(loginVo.getMobile())){
-//        }
 
         userService.login(response,loginVo);
         return Result.success(true);
