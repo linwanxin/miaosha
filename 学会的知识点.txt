@@ -42,4 +42,23 @@ Rest会返回数据对象，自动封装成Json格式；
 14.session、cookie的有效期：每次都是你最后访问的时间+有效期 = 失效期；
 而不是根据第一次创建cookie的时间！
 
-15.
+
+
+
+
+====第3部分
+15.设计组合时候，可以采用继承的方式：比如GoodsVo
+
+
+16 数据库插入报错：
+原因是建表的保存数据的字符集选错了！应为utf8-default collcation！
+查blog得知是字段也需要utf-8才行，在下面设置，只有varchar和longtext才会需要设置字符集！
+测试得知，要不字段默认也是可以的，要不自己手动指定！
+（其实你在创建表时，表和字段都又默认的，schema default 和table default，不动即可）！
+
+
+17,真正企业用到的ID：snowflake算法的自增ID(long 类型的)
+
+
+
+18.+ param（”“）其实是类似于map类型！
