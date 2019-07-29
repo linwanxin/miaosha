@@ -38,10 +38,10 @@ public class OrderService {
         orderInfo.setOrderChannel(1);
         orderInfo.setStatus(0);
         orderInfo.setUserId(user.getId());
-        long orderId = orderDao.insert(orderInfo);
+        orderDao.insert(orderInfo);
         MSOrder msOrder = new MSOrder();
         msOrder.setGoodsId(goods.getId());
-        msOrder.setOrderId(orderId);
+        msOrder.setOrderId(orderInfo.getId());
         msOrder.setUserId(user.getId());
         orderDao.insertMSOrder(msOrder);
         return orderInfo;

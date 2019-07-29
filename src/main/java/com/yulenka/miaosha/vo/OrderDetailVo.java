@@ -7,5 +7,5 @@ import lombok.Data;
 @Data
 public class OrderDetailVo {
 	private GoodsVo goods;
-	private OrderInfo orderInfo;
+	private OrderInfo order;
 }

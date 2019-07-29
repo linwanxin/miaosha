@@ -42,7 +42,7 @@ public class OrderController {
         GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
         OrderDetailVo orderDetailVo = new OrderDetailVo();
         orderDetailVo.setGoods(goods);
-        orderDetailVo.setOrderInfo(order);
+        orderDetailVo.setOrder(order);
         return Result.success(orderDetailVo);
     }
 
