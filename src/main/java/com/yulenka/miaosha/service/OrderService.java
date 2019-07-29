@@ -7,6 +7,7 @@ import com.yulenka.miaosha.domain.OrderInfo;
 import com.yulenka.miaosha.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -25,6 +26,7 @@ public class OrderService {
         return orderDao.getMSOrderByUserIdGoodsId(userId,goodsId);
     }
 
+    @Transactional
     public OrderInfo createOrder(MSUser user, GoodsVo goods) {
         OrderInfo orderInfo = new OrderInfo();
         orderInfo.setCreateDate(new Date());
@@ -45,4 +47,7 @@ public class OrderService {
         return orderInfo;
     }
 
+    public OrderInfo getOrderById(long orderId) {
+        return orderDao.getOrderById(orderId);
+    }
 }

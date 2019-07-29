@@ -18,11 +18,12 @@ import java.util.List;
 public interface GoodsDao {
 
     @Select("select g.*,mg.ms_price,mg.stock_count,mg.start_date,mg.end_date from ms_goods mg left join goods g on mg.goods_id = g.id")
-    public List<GoodsVo> getAllGoodsVo();
+     List<GoodsVo> getAllGoodsVo();
 
-    @Select("select g.*,mg.ms_price,mg.stock_count,mg.start_date,mg.end_date from ms_goods mg left join goods g on mg.goods_id = g.id where g.id = #{goodsId}")
-    public GoodsVo getGoodsVoByGoodsId(@Param("goodsId") long goodsId);
+    @Select("select g.*,mg.ms_price,mg.stock_count,mg.start_date,mg.end_date from ms_goods mg left join goods g on mg.goods_id = g.id where g.id = #{goodsId} for update;")
+     GoodsVo getGoodsVoByGoodsId(@Param("goodsId") long goodsId);
 
-    @Update("update ms_goods set stock_count = stock_count -1 where goods_id = #{goodsId}")
-    public int reduceStock(MSGoods msGoods);
+    //只有》0才减库存，从数据库的并发角度解决卖超问题！（会+锁）
+    @Update("update ms_goods set stock_count = stock_count -1 where goods_id = #{goodsId} and stock_count > 0")
+     int reduceStock(MSGoods msGoods);
 }

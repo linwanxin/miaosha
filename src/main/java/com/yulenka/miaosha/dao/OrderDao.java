@@ -3,6 +3,7 @@ package com.yulenka.miaosha.dao;
 import com.yulenka.miaosha.domain.MSOrder;
 import com.yulenka.miaosha.domain.OrderInfo;
 import org.apache.ibatis.annotations.*;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @Descripiton:
@@ -22,6 +23,10 @@ public interface OrderDao {
     long insert(OrderInfo orderInfo);
 
     @Insert("insert into ms_order (user_id, goods_id, order_id)values(#{userId}, #{goodsId}, #{orderId})")
-    public int insertMSOrder(MSOrder msOrder);
+     int insertMSOrder(MSOrder msOrder);
+
+    @Select("select * from order_info where id = #{orderId}")
+     OrderInfo getOrderById(@Param("orderId")long orderId);
+
 
 }

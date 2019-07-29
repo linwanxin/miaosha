@@ -32,7 +32,7 @@ public class MSUserService {
 
     public static final String COOKI_NAME_TOKEN = "token";
 
-    public boolean login(HttpServletResponse response,LoginVo loginVo){
+    public String login(HttpServletResponse response,LoginVo loginVo){
         if(loginVo == null){
            throw  new GlobalException(CodeMsg.SERVER_ERROR);
         }
@@ -54,7 +54,7 @@ public class MSUserService {
         String token = UUIDUtil.uuid();
         addCookie(response,token,msUser);
 
-        return true;
+        return token;
     }
 
     /**
@@ -65,7 +65,7 @@ public class MSUserService {
             return null;
         }
         MSUser msUser =  redisService.get(UserKey.token,token,MSUser.class);
-        //延长有效期:这里不是采用增加时间方式，因为cookie+，redis也要+；而是采用重新生成cookie的方式，但是token不变，还是原来的
+        //延长有效期:这里不是采用增加时间方式，因为cookie+，redis也要+；而 是采用重新生成cookie的方式，但是token不变，还是原来的
         if(msUser != null){
             addCookie(response,token,msUser);
         }
@@ -83,7 +83,37 @@ public class MSUserService {
     }
 
 
+    //加入对象缓存
     public MSUser getUserById(long id){
-        return msUserDao.getUserById(id);
+        //取缓存
+        MSUser msUser = redisService.get(UserKey.getById,""+id,MSUser.class);
+        if(msUser!= null){
+            return msUser;
+        }
+        //取数据库
+        msUser =  msUserDao.getUserById(id);
+        if(msUser != null){
+            redisService.set(UserKey.getById,""+id,MSUser.class);
+        }
+        return msUser;
+    }
+
+    //其他渠道修改对象则删除原缓存数据;注意顺序！
+    public boolean updatePassword(String token,long id,String formPass){
+        //取出对象
+        MSUser msUser =  getUserById(id);
+        if(msUser == null){
+            throw new GlobalException(CodeMsg.MOBILE_NOT_EXIST);
+        }
+        //更新数据库
+        MSUser updateUser = new MSUser();
+        updateUser.setPassword(MD5Util.formPassToDbPass(formPass,msUser.getSalt()));
+        updateUser.setId(id);
+        msUserDao.updateUser(updateUser);
+        //处理缓存
+        redisService.delete(UserKey.getById,"" + id);
+        msUser.setPassword(updateUser.getPassword());
+        redisService.set(UserKey.token,token,msUser);
+        return true;
     }
 }
