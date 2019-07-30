@@ -96,7 +96,11 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-
+        <!--集成reabbitmq-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
         <!--消除@config报错-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

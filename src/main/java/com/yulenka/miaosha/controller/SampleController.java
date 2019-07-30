@@ -1,6 +1,7 @@
 package com.yulenka.miaosha.controller;
 
 import com.yulenka.miaosha.domain.User;
+import com.yulenka.miaosha.rabbitmq.MQSender;
 import com.yulenka.miaosha.redis.KeyPrefix;
 import com.yulenka.miaosha.redis.RedisService;
 import com.yulenka.miaosha.redis.UserKey;
@@ -27,6 +28,8 @@ public class SampleController {
     UserService userService;
     @Autowired
     RedisService redisService;
+    @Autowired
+    MQSender sender;
 
     @GetMapping("/hello")
     public String thymeleaf(Model model){
@@ -86,5 +89,13 @@ public class SampleController {
     }
 
 
-
+    /**
+        rabbitmq测试
+     */
+    @RequestMapping("/rabbit")
+    @ResponseBody
+    public Result<String> rabbitmq(){
+        //sender.sender("hello rabbitmq");
+        return Result.success("hello");
+    }
 }

@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class MSOrder {
-	private Long id;
+	private long id;
 	private Long userId;
-	private Long  orderId;
+	private long  orderId;
 	private Long goodsId;
 }
