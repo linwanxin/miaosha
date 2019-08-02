@@ -1,11 +1,11 @@
 package com.yulenka.miaosha.controller;
 
-import com.sun.org.apache.bcel.internal.classfile.Code;
+import com.yulenka.miaosha.access.AccessLimit;
 import com.yulenka.miaosha.domain.MSOrder;
 import com.yulenka.miaosha.domain.MSUser;
-import com.yulenka.miaosha.domain.OrderInfo;
 import com.yulenka.miaosha.rabbitmq.MQSender;
 import com.yulenka.miaosha.rabbitmq.MSMessage;
+import com.yulenka.miaosha.redis.AccessKey;
 import com.yulenka.miaosha.redis.GoodsKey;
 import com.yulenka.miaosha.redis.RedisService;
 import com.yulenka.miaosha.result.CodeMsg;
@@ -20,6 +20,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +53,22 @@ public class MSController implements InitializingBean{
 
     //增加内存缓存，减少redis网络访问
     private Map<Long,Boolean> localOverMap = new HashMap<>();
+
+    /**
+     * 实现初始化：加载商品库存
+     * @throws Exception
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        List<GoodsVo> goodsVos =  goodsService.getAllGoodsVo();
+        if(goodsVos == null){
+            return;
+        }
+        for(GoodsVo goodsVo : goodsVos){
+            redisService.set(GoodsKey.getMSGoodsStock,""+ goodsVo.getId(),goodsVo.getStockCount());
+            localOverMap.put(goodsVo.getId(),false);
+        }
+    }
 /**
     @PostMapping("/do_miaosha2")
     public String miaosha2(Model model, MSUser user,
@@ -78,14 +99,27 @@ public class MSController implements InitializingBean{
         
     }
     */
-    @PostMapping("/do_miaosha")
+    /**
+     * 秒杀接口
+     * @param user
+     * @param goodsId
+     * @return
+     */
+    @PostMapping("/{path}/do_miaosha")
     @ResponseBody
     public  Result<Integer> miaosha(MSUser user,
-                                     @RequestParam("goodsId") long goodsId){
-
+                                     @RequestParam("goodsId") long goodsId,
+                                    @PathVariable("path")String path)
+    {
         if(user == null){
             return Result.error(CodeMsg.SESSION_ERROR);
         }
+        //验证path
+        boolean check  = msService.checkPath(user,goodsId,path);
+        if(!check){
+            return Result.error(CodeMsg.REQUEST_ILLEGAL);
+        }
+        //内存标记
         boolean over  = localOverMap.get(goodsId);
         if(over){
             return Result.error(CodeMsg.MIAO_SHA_OVER);
@@ -125,19 +159,12 @@ public class MSController implements InitializingBean{
         */
     }
 
-    //实现初始化：加载商品库存
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        List<GoodsVo> goodsVos =  goodsService.getAllGoodsVo();
-        if(goodsVos == null){
-            return;
-        }
-        for(GoodsVo goodsVo : goodsVos){
-            redisService.set(GoodsKey.getMSGoodsStock,""+ goodsVo.getId(),goodsVo.getStockCount());
-            localOverMap.put(goodsVo.getId(),false);
-        }
-    }
-
+    /**
+     * 获取秒杀结果
+     * @param msUser
+     * @param goodsId
+     * @return
+     */
     @GetMapping("/result")
     @ResponseBody
     public Result<Long> result(MSUser msUser,@RequestParam("goodsId") long goodsId){
@@ -148,5 +175,51 @@ public class MSController implements InitializingBean{
         return Result.success(result);
     }
 
+    /**
+     * 获取秒杀接口
+     * @param msUser
+     * @param goodsId
+     * @param verifyCode
+     * @return
+     */
+    @AccessLimit(seconds = 5,maxCount = 5,needLogin = true)
+    @GetMapping("/path")
+    @ResponseBody
+    public Result<String> getMSPath(HttpServletRequest request ,MSUser msUser, @RequestParam("goodsId")long goodsId,
+                                    @RequestParam(value = "verifyCode",defaultValue = "0")int verifyCode){
+        if(msUser == null){
+            return Result.error(CodeMsg.SESSION_ERROR);
+        }
+
+        boolean check = msService.checkVerifyCode(msUser,goodsId,verifyCode);
+        if(!check){
+            return Result.error(CodeMsg.REQUEST_ILLEGAL);
+        }
+
+        String path = msService.createMSPath(msUser,goodsId);
+        return Result.success(path);
+    }
+    /**
+     *获取验证码
+     */
+    @GetMapping("/verifyCode")
+    @ResponseBody
+    public Result<String> getMSVerifyCode(HttpServletResponse response,MSUser msUser,
+                                          @RequestParam("goodsId") long goodsId){
+        if(msUser == null){
+            return Result.error(CodeMsg.SESSION_ERROR);
+        }
+        try{
+            BufferedImage image = msService.createVerifyCode(msUser,goodsId);
+            OutputStream out = response.getOutputStream();
+            ImageIO.write(image,"JPEG",out);
+            out.flush();
+            out.close();
+            return null;
+        }catch (Exception e){
+            e.printStackTrace();
+            return Result.error(CodeMsg.MIAOSHA_FAIL);
+        }
+    }
 
 }

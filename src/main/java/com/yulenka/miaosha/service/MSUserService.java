@@ -93,7 +93,7 @@ public class MSUserService {
         //取数据库
         msUser =  msUserDao.getUserById(id);
         if(msUser != null){
-            redisService.set(UserKey.getById,""+id,MSUser.class);
+            redisService.set(UserKey.getById,""+id,msUser);
         }
         return msUser;
     }

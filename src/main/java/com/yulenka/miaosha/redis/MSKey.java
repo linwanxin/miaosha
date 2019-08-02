@@ -7,10 +7,12 @@ package com.yulenka.miaosha.redis;
  */
 public class MSKey extends BasePrefix {
 
-
-    public MSKey(String prefix) {
-        super(prefix);
+    public MSKey(int expiredSeconds, String prefix) {
+        super(expiredSeconds, prefix);
     }
-    public static MSKey isGoodsOver = new MSKey("go");
+
+    public static MSKey isGoodsOver = new MSKey(0,"go");
+    public static MSKey getMisoshaPath = new MSKey(60,"mp");
+    public static MSKey getMiaoshaVeriyCode = new MSKey(300,"vc");
 
 }

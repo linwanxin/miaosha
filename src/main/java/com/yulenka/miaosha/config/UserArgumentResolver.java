@@ -1,5 +1,6 @@
 package com.yulenka.miaosha.config;
 
+import com.yulenka.miaosha.access.UserContext;
 import com.yulenka.miaosha.domain.MSUser;
 import com.yulenka.miaosha.service.MSUserService;
 import org.apache.commons.lang3.StringUtils;
@@ -35,33 +36,7 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer, NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
-
-        HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
-        HttpServletResponse response = nativeWebRequest.getNativeResponse(HttpServletResponse.class);
-
-
-        String paramToken = request.getParameter(msUserService.COOKI_NAME_TOKEN);
-        String cookieToken = getCookieValue(request,msUserService.COOKI_NAME_TOKEN);
-        if(StringUtils.isEmpty(cookieToken) && StringUtils.isEmpty(paramToken)){
-            return null;
-        }
-        String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
-
-        return msUserService.getUserByToken(response,token);
+        return UserContext.get();
     }
-
-    private String getCookieValue(HttpServletRequest request, String cookiNameToken) {
-        Cookie[] cookies = request.getCookies();
-        if(cookies == null || cookies.length <= 0){
-            return null;
-        }
-        for(Cookie cookie : cookies){
-            if(cookie.getName().equals(cookiNameToken)){
-                return cookie.getValue();
-            }
-        }
-        return null;
-    }
-
 
 }
